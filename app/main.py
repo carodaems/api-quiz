@@ -8,7 +8,6 @@ from sqlalchemy import func
 import os
 import models
 import schemas
-import requests
 from database import SessionLocal, engine
 
 if not os.path.exists('.\sqlitedb'):
