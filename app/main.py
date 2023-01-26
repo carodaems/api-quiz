@@ -27,9 +27,6 @@ current_round = {
     "question": 1
 }
 
-current_scores = {}
-
-
 origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
@@ -272,6 +269,8 @@ def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     teams = db.query(models.Team).offset(skip).limit(limit).all()
     return teams
 
+# scorebord met update knop
+
 
 @app.get("/scores")
 def get_scores(db: Session = Depends(get_db)):
@@ -283,29 +282,17 @@ def get_scores(db: Session = Depends(get_db)):
             if response.correct:
                 score += 1
         scores[team.team_name] = score
-    current_scores = scores
-    return current_scores
+    return scores
 
 
 @app.post("/setround")
-async def set_round(db: Session = Depends(get_db)):
+async def set_round():
     current_round["round"] += 1
 
-    teams = db.query(models.Team).all()
-    scores = {}
-    for team in teams:
-        score = 0
-        for response in team.responses:
-            if response.correct:
-                score += 1
-        scores[team.team_name] = score
-    current_scores = scores
-
-    return {"current round": current_round,
-            "scores": current_scores}
+    return current_round
 
 
-@app.get("/setquestion")
+@app.post("/setquestion")
 async def set_question():
     current_round["question"] += 1
     return current_round
