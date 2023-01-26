@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from sqlalchemy import func
+from httpx import AsyncClient
+
 
 import os
 import models
@@ -17,11 +19,15 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+client = AsyncClient()
+
 
 current_round = {
     "round": 1,
     "question": 1
 }
+
+current_scores = {}
 
 
 origins = [
@@ -268,8 +274,8 @@ def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 
 @app.get("/scores")
-def get_scores(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    teams = db.query(models.Team).offset(skip).limit(limit).all()
+def get_scores(db: Session = Depends(get_db)):
+    teams = db.query(models.Team).all()
     scores = {}
     for team in teams:
         score = 0
@@ -277,19 +283,29 @@ def get_scores(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
             if response.correct:
                 score += 1
         scores[team.team_name] = score
-    return scores
+    current_scores = scores
+    return current_scores
 
 
 @app.post("/setround")
-async def set_round():
+async def set_round(db: Session = Depends(get_db)):
     current_round["round"] += 1
 
-    scores = requests.get(
-        "https://quiz-service-carodaems.cloud.okteto.net/scores/").json()
-    return {"round": current_round, "scores": scores}
+    teams = db.query(models.Team).all()
+    scores = {}
+    for team in teams:
+        score = 0
+        for response in team.responses:
+            if response.correct:
+                score += 1
+        scores[team.team_name] = score
+    current_scores = scores
+
+    return {"current round": current_round,
+            "scores": current_scores}
 
 
-@app.post("/setquestion")
+@app.get("/setquestion")
 async def set_question():
     current_round["question"] += 1
     return current_round
