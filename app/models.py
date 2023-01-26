@@ -37,4 +37,7 @@ class Responses(Base):
     reponse = Column(String, index=True)
     correct = Column(Boolean, index=True)
     team_id = Column(Integer, ForeignKey("teams.id"))
+    round_id = Column(Integer, index=True)
+    question_number = Column(Integer, index=True)
+
     team = relationship("Team", back_populates="responses")

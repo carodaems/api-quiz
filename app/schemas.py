@@ -30,6 +30,7 @@ class Question(QuestionCreate):
 
 class QuestionCompare(BaseModel):
     guess: str
+    team_id: int
 
 
 # klasses voor teams

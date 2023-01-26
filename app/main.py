@@ -7,6 +7,7 @@ from sqlalchemy import func
 import os
 import models
 import schemas
+import requests
 from database import SessionLocal, engine
 
 if not os.path.exists('.\sqlitedb'):
@@ -53,23 +54,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-@app.post("/setround")
-async def set_round():
-    current_round["round"] += 1
-    return current_round
-
-
-@app.post("/setquestion")
-async def set_question():
-    current_round["question"] += 1
-    return current_round
-
-
-@app.get("/getround")
-async def get_round():
-    return current_round
 
 
 @app.get("/quiz_rounds/")
@@ -209,10 +193,62 @@ def compare_question(guess: schemas.QuestionCompare, db: Session = Depends(get_d
     question = db.query(models.Question).filter(
         models.Question.question_number == current_round["question"], models.Question.round_id == current_round["round"]).first()
     if question.correct_answer == guess.guess:
-        return {"message": "True"}
+        is_correct = True
     else:
-        return {"message": "False"}
-    # functionaliteit toevoegen die antwoorden per team in een database opslaat wanneer deze verzonden worden
+        is_correct = False
+    db_response = models.Responses(
+        reponse=guess.guess, team_id=guess.team_id, correct=is_correct, round_id=question.round_id, question_number=question.question_number)
+    db.add(db_response)
+    db.flush()
+    db.commit()
+    db.refresh(db_response)
+    return db_response
+
+
+@app.put("/quiz_rounds/questions/check")
+def update_response(guess: schemas.QuestionCompare, db: Session = Depends(get_db)):
+    question = db.query(models.Question).filter(
+        models.Question.question_number == current_round["question"], models.Question.round_id == current_round["round"]).first()
+
+    team = db.query(models.Team).filter(
+        models.Team.id == guess.team_id).first()
+    if team is None:
+        raise HTTPException(status_code=400, detail="Team not found")
+
+    if question.correct_answer == guess.guess:
+        is_correct = True
+    else:
+        is_correct = False
+
+    db_number = db.query(models.Responses).filter(
+        models.Responses.team_id == guess.team_id, models.Responses.question_number == question.question_number, models.Responses.round_id == question.round_id
+    ).first()
+
+    if db_number is None:
+        db_number = models.Responses(
+            reponse=guess.guess, team_id=guess.team_id, correct=is_correct, round_id=question.round_id, question_number=question.question_number)
+    else:
+        db_number.reponse = guess.guess
+        db_number.team_id = guess.team_id
+        db_number.correct = is_correct
+        db_number.round_id = question.round_id
+        db_number.question_number = question.question_number
+        db_number.id = db_number.id
+
+    db.add(db_number)
+    db.flush()
+    db.commit()
+    db.refresh(db_number)
+    return db_number
+
+
+@app.get("/quiz_rounds/questions/check/{team_id}")
+def check_responses(team_id: int, db: Session = Depends(get_db)):
+    responses = db.query(models.Responses).filter(
+        models.Responses.team_id == team_id).all()
+    if not responses:
+        raise HTTPException(status_code=404, detail="Responses not found")
+    return responses
 
 
 @app.post("/teams/")
@@ -227,8 +263,38 @@ def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
 
 @app.get("/teams/")
 def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    quiz_rounds = db.query(models.QuizRound).offset(skip).limit(limit).all()
-    return quiz_rounds
+    teams = db.query(models.Team).offset(skip).limit(limit).all()
+    return teams
 
-# endpoint voor hoeveelheid questions in een ronde
-# endpoint voor hoeveelheid rondes
+
+@app.get("/scores")
+def get_scores(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    teams = db.query(models.Team).offset(skip).limit(limit).all()
+    scores = {}
+    for team in teams:
+        score = 0
+        for response in team.responses:
+            if response.correct:
+                score += 1
+        scores[team.team_name] = score
+    return scores
+
+
+@app.post("/setround")
+async def set_round():
+    current_round["round"] += 1
+
+    scores = requests.get(
+        "https://quiz-service-carodaems.cloud.okteto.net/scores/").json()
+    return {"round": current_round, "scores": scores}
+
+
+@app.post("/setquestion")
+async def set_question():
+    current_round["question"] += 1
+    return current_round
+
+
+@app.get("/getround")
+async def get_round():
+    return current_round
