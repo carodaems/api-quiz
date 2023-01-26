@@ -56,11 +56,28 @@ def read_quiz_rounds(skip: int = 0, limit: int = 100, db: Session = Depends(get_
 @app.post("/quiz_rounds/")
 def create_quiz_round(round: schemas.QuizRoundCreate, db: Session = Depends(get_db)):
     db_round = models.QuizRound(name=round.name, key=round.key)
-    db.add(db_round)
-    db.flush()
-    db.commit()
-    db.refresh(db_round)
+    round_check = db.query(models.QuizRound).filter(
+        models.QuizRound.name == round.name).first()
+    if round_check is None:
+        db.add(db_round)
+        db.flush()
+        db.commit()
+        db.refresh(db_round)
+    elif db_round.name == round_check.name:
+        raise HTTPException(
+            status_code=400, detail="This round already exists")
     return db_round
+
+
+@app.delete("quiz_rounds/{round_id}")
+def delete_quiz_round(round_id: int, db: Session = Depends(get_db)):
+    db_round = db.query(models.QuizRound.filter(
+        models.QuizRound.id == round_id)).first()
+    if db_round is None:
+        raise HTTPException(status_code=404, detail="Quiz round not found")
+    db.delete(db_round)
+    db.commit()
+    return {"message": "Round deleted"}
 
 
 @app.get("/quiz_rounds/{round_id}")
