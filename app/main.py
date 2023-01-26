@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from sqlalchemy import func
-from httpx import AsyncClient
 
 
 import os
@@ -18,8 +17,6 @@ if not os.path.exists('.\sqlitedb'):
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-client = AsyncClient()
 
 
 current_round = {
