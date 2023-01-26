@@ -20,3 +20,7 @@ class Question(Base):
     correct_answer = Column(String, index=True)
     round_id = Column(Integer, ForeignKey("quiz_rounds.id"))
     round = relationship("QuizRound", back_populates="questions")
+
+
+# model voor team
+# model voor opgegeven antwoorden van een team

@@ -24,7 +24,8 @@ origins = [
     "http://localhost:8080",
     "http://127.0.0.1:5500",
     "http://127.0.0.1:3000",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://gregarious-buttercream-79d640.netlify.app/"
 ]
 
 app.add_middleware(
@@ -184,6 +185,10 @@ def compare_question(guess: schemas.QuestionCompare, db: Session = Depends(get_d
     question = db.query(models.Question).filter(
         models.Question.id == guess.question_id, models.Question.round_id == guess.round_id).first()
     if question.correct_answer == guess.guess:
-        return {"message": "Correct"}
+        return {"message": "True"}
     else:
-        return {"message": "Wrong"}
+        return {"message": "False"}
+    # functionaliteit toevoegen die antwoorden per team in een database opslaat wanneer deze verzonden worden
+
+# endpoint voor hoeveelheid questions in een ronde
+# endpoint voor hoeveelheid rondes
