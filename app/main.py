@@ -18,8 +18,8 @@ app = FastAPI()
 
 
 current_round = {
-    "round": 0,
-    "question": 0
+    "round": 1,
+    "question": 1
 }
 
 
