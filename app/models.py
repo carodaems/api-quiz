@@ -1,5 +1,5 @@
 from database import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 
@@ -22,5 +22,19 @@ class Question(Base):
     round = relationship("QuizRound", back_populates="questions")
 
 
-# model voor team
-# model voor opgegeven antwoorden van een team
+class Team(Base):
+    __tablename__ = "teams"
+
+    id = Column(Integer, primary_key=True, index=True)
+    team_name = Column(String, index=True)
+    responses = relationship("Responses", back_populates="team")
+
+
+class Responses(Base):
+    __tablename__ = "responses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    reponse = Column(String, index=True)
+    correct = Column(Boolean, index=True)
+    team_id = Column(Integer, ForeignKey("teams.id"))
+    team = relationship("Team", back_populates="responses")

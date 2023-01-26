@@ -29,6 +29,14 @@ class Question(QuestionCreate):
 
 
 class QuestionCompare(BaseModel):
-    round_id: int
-    question_id: int
     guess: str
+
+
+# klasses voor teams
+
+class TeamCreate(BaseModel):
+    name: str
+
+
+class Team(TeamCreate):
+    pass

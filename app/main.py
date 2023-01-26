@@ -17,6 +17,12 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
+current_round = {
+    "round": 0,
+    "question": 0
+}
+
+
 origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
@@ -47,6 +53,23 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@app.post("/setround")
+async def set_round():
+    current_round["round"] += 1
+    return current_round
+
+
+@app.post("/setquestion")
+async def set_question():
+    current_round["question"] += 1
+    return current_round
+
+
+@app.get("/getround")
+async def get_round():
+    return current_round
 
 
 @app.get("/quiz_rounds/")
@@ -184,12 +207,28 @@ def delete_question(round_id: int, question_id: int, db: Session = Depends(get_d
 @app.post("/quiz_rounds/questions/check")
 def compare_question(guess: schemas.QuestionCompare, db: Session = Depends(get_db)):
     question = db.query(models.Question).filter(
-        models.Question.id == guess.question_id, models.Question.round_id == guess.round_id).first()
+        models.Question.question_number == current_round["question"], models.Question.round_id == current_round["round"]).first()
     if question.correct_answer == guess.guess:
         return {"message": "True"}
     else:
         return {"message": "False"}
     # functionaliteit toevoegen die antwoorden per team in een database opslaat wanneer deze verzonden worden
+
+
+@app.post("/teams/")
+def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
+    db_team = models.Team(team_name=team.name)
+    db.add(db_team)
+    db.flush()
+    db.commit()
+    db.refresh(db_team)
+    return db_team
+
+
+@app.get("/teams/")
+def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    quiz_rounds = db.query(models.QuizRound).offset(skip).limit(limit).all()
+    return quiz_rounds
 
 # endpoint voor hoeveelheid questions in een ronde
 # endpoint voor hoeveelheid rondes
