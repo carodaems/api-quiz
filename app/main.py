@@ -26,7 +26,7 @@ origins = [
     "http://127.0.0.1:3000",
     "http://localhost:3000",
     "https://gregarious-buttercream-79d640.netlify.app",
-    "https://gregarious-buttercream-79d6"
+    "https://gregarious-buttercream-79d640"
 ]
 
 app.add_middleware(
