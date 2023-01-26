@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  system-service:
+  quiz-service:
     image: carodaems/api-quiz
     ports:
       - "8000:8000"
