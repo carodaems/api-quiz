@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - sqlite_useritems_volume:/code/sqlitedb
+      - sqlite_quiz_volume:/code/sqlitedb
 
 volumes:
-  sqlite_useritems_volume:
+  sqlite_quiz_volume:
