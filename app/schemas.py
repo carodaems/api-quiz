@@ -43,3 +43,8 @@ class TeamCreate(BaseModel):
 
 class Team(TeamCreate):
     pass
+
+
+class Score(BaseModel):
+    team_id: int
+    score: int

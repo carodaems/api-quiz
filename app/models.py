@@ -28,6 +28,7 @@ class Team(Base):
     id = Column(Integer, primary_key=True, index=True)
     team_name = Column(String, index=True)
     responses = relationship("Responses", back_populates="team")
+    scores = relationship("Scores", back_populates="team")
 
 
 class Responses(Base):
@@ -41,3 +42,13 @@ class Responses(Base):
     question_number = Column(Integer, index=True)
 
     team = relationship("Team", back_populates="responses")
+
+
+class Scores(Base):
+    __tablename__ = "scores"
+
+    id = Column(Integer, primary_key=True, index=True)
+    team_id = Column(Integer, ForeignKey("teams.id"))
+    score = Column(Integer, index=True)
+
+    team = relationship("Team", back_populates="scores")

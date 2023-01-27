@@ -276,20 +276,57 @@ def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 
 @app.get("/scores")
-def get_scores(db: Session = Depends(get_db)):
-    teams = db.query(models.Team).all()
+def get_scores_old(db: Session = Depends(get_db)):
+    db_scores = db.query(models.Scores).all()
+
     scores = {}
-    for team in teams:
-        score = 0
-        for response in team.responses:
-            if response.correct:
-                score += 1
-        scores[team.team_name] = score
+    for score in db_scores:
+        scores[score.team.team_name] = score.score
 
     sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     converted_scores = dict(sorted_scores)
 
     return converted_scores
+
+
+@app.put("/scores")
+def set_scores(db: Session = Depends(get_db)):
+    teams = db.query(models.Team).all()
+    for team in teams:
+        score = 0
+        for response in team.responses:
+            if response.correct:
+                score += 1
+        scores = models.Scores(team_id=team.id, score=score)
+        db.add(scores)
+        db.flush()
+        db.commit()
+        db.refresh(scores)
+    return {"message": "success"}
+
+
+@app.put("/scores/{team_id}/increment")
+def increment_score(team_id: int, db: Session = Depends(get_db)):
+    team = db.query(models.Scores).filter(
+        models.Scores.team_id == team_id).first()
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    team.score += 1
+    db.commit()
+    db.refresh(team)
+    return {"detail": "Score incremented for team"}
+
+
+@app.put("/scores/{team_id}/decrement")
+def decrement_score(team_id: int, db: Session = Depends(get_db)):
+    team = db.query(models.Scores).filter(
+        models.Scores.team_id == team_id).first()
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    team.score -= 1
+    db.commit()
+    db.refresh(team)
+    return {"detail": "Score decremented for team"}
 
 
 @app.post("/setround")
