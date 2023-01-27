@@ -56,8 +56,8 @@ def get_db():
 
 
 @app.get("/quiz_rounds/")
-def read_quiz_rounds(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    quiz_rounds = db.query(models.QuizRound).offset(skip).limit(limit).all()
+def read_quiz_rounds(db: Session = Depends(get_db)):
+    quiz_rounds = db.query(models.QuizRound).all()
     return quiz_rounds
 
 
@@ -270,13 +270,13 @@ def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/teams/")
-def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    teams = db.query(models.Team).offset(skip).limit(limit).all()
+def get_teams(db: Session = Depends(get_db)):
+    teams = db.query(models.Team).all()
     return teams
 
 
 @app.get("/scores")
-def get_scores_old(db: Session = Depends(get_db)):
+def get_scores(db: Session = Depends(get_db)):
     db_scores = db.query(models.Scores).all()
 
     scores = {}
@@ -287,6 +287,13 @@ def get_scores_old(db: Session = Depends(get_db)):
     converted_scores = dict(sorted_scores)
 
     return converted_scores
+
+
+@app.get("/scores/raw")
+def get_scores_raw(db: Session = Depends(get_db)):
+    scores = db.query(models.Scores).all()
+
+    return scores
 
 
 @app.put("/scores")
