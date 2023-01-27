@@ -36,7 +36,7 @@ class QuestionCompare(BaseModel):
 # klasses voor teams
 
 class TeamCreate(BaseModel):
-    name: str
+    number: int
 
 
 class Team(TeamCreate):

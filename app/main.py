@@ -250,9 +250,18 @@ def check_responses(team_id: int, db: Session = Depends(get_db)):
     return responses
 
 
-@app.post("/teams/")
+@app.put("/teams/")
 def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
-    db_team = models.Team(team_name=team.name)
+    name = "Team " + str(team.number)
+
+    db_team = db.query(models.Team).filter(
+        models.Team.id == team.number, models.Team.team_name == name).first()
+    if db_team is None:
+        db_team = models.Team(team_name=name, id=team.number)
+    else:
+        db_team.id = team.number
+        db_team.team_name = name
+
     db.add(db_team)
     db.flush()
     db.commit()
@@ -265,8 +274,6 @@ def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     teams = db.query(models.Team).offset(skip).limit(limit).all()
     return teams
 
-# scorebord met update knop
-
 
 @app.get("/scores")
 def get_scores(db: Session = Depends(get_db)):
@@ -278,13 +285,16 @@ def get_scores(db: Session = Depends(get_db)):
             if response.correct:
                 score += 1
         scores[team.team_name] = score
-    return scores
+
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    converted_scores = dict(sorted_scores)
+
+    return converted_scores
 
 
 @app.post("/setround")
 async def set_round():
     current_round["round"] += 1
-
     return current_round
 
 
