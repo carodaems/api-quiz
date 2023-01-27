@@ -55,13 +55,13 @@ def get_db():
         db.close()
 
 
-@app.get("/quiz_rounds/")
-def read_quiz_rounds(db: Session = Depends(get_db)):
-    quiz_rounds = db.query(models.QuizRound).all()
+@app.get("/quiz_rounds")
+def read_quiz_rounds(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    quiz_rounds = db.query(models.QuizRound).offset(skip).limit(limit).all()
     return quiz_rounds
 
 
-@app.post("/quiz_rounds/")
+@app.post("/quiz_rounds")
 def create_quiz_round(round: schemas.QuizRoundCreate, db: Session = Depends(get_db)):
     db_round = models.QuizRound(name=round.name, key=round.key)
     round_check = db.query(models.QuizRound).filter(
@@ -111,7 +111,7 @@ def update_quiz_round(round_id: int, round: schemas.QuizRoundUpdate, db: Session
     return db_round
 
 
-@app.get("/quiz_rounds/{round_id}/questions/")
+@app.get("/quiz_rounds/{round_id}/questions")
 def read_questions(round_id: int, db: Session = Depends(get_db)):
     questions = db.query(models.Question).filter(
         models.Question.round_id == round_id).all()
@@ -120,7 +120,7 @@ def read_questions(round_id: int, db: Session = Depends(get_db)):
     return questions
 
 
-@app.post("/quiz_rounds/{round_id}/questions/")
+@app.post("/quiz_rounds/{round_id}/questions")
 def create_question(round_id: int, question: schemas.QuestionCreate, db: Session = Depends(get_db)):
     db_round = db.query(models.QuizRound).filter(
         models.QuizRound.id == round_id).first()
@@ -270,8 +270,8 @@ def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/teams/")
-def get_teams(db: Session = Depends(get_db)):
-    teams = db.query(models.Team).all()
+def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    teams = db.query(models.Team).offset(skip).limit(limit).all()
     return teams
 
 
