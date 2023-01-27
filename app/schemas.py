@@ -24,6 +24,10 @@ class QuestionUpdate(BaseModel):
     answer: str
 
 
+class QuestionUpdates(QuestionUpdate):
+    question_number: int
+
+
 class Question(QuestionCreate):
     id: int
 
@@ -32,8 +36,6 @@ class QuestionCompare(BaseModel):
     guess: str
     team_id: int
 
-
-# klasses voor teams
 
 class TeamCreate(BaseModel):
     number: int

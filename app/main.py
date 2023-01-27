@@ -307,3 +307,20 @@ async def set_question():
 @app.get("/getround")
 async def get_round():
     return current_round
+
+
+@app.put("/quiz_rounds/{round_id}/answers")
+def update_questions(round_id: int, questions: List[schemas.QuestionUpdates], db: Session = Depends(get_db)):
+    db_questions = db.query(models.Question).filter(
+        models.Question.round_id == round_id).all()
+    if not db_questions:
+        raise HTTPException(
+            status_code=404, detail="Round not found or no question for this round")
+    for db_question in db_questions:
+        for question in questions:
+            if db_question.question_number == question.question_number:
+                db_question.correct_answer = question.answer
+                db.add(db_question)
+                db.commit()
+                db.refresh(db_question)
+    return {"detail": "questions updated"}
