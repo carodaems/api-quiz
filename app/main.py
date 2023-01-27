@@ -140,6 +140,16 @@ def create_question(round_id: int, question: schemas.QuestionCreate, db: Session
 
 @app.post("/quiz_rounds/{round_id}/answers/multiple")
 async def create_multiple_quiz_answers(round_id: int, answers: List[schemas.QuestionCreate], db: Session = Depends(get_db)):
+    db_round = db.query(models.QuizRound).filter(
+        models.QuizRound.id == round_id).first()
+    if db_round is None:
+        name = "Round " + str(round_id)
+        db_round = models.QuizRound(name=name, key=name)
+        db.add(db_round)
+        db.flush()
+        db.commit()
+        db.refresh(db_round)
+
     last_question_number = db.query(func.max(models.Question.question_number)).filter(
         models.Question.round_id == round_id).scalar()
     question_number = last_question_number + 1 if last_question_number else 1
