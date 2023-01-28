@@ -34,7 +34,7 @@ origins = [
     "https://gregarious-buttercream-79d640.netlify.app",
     "https://gregarious-buttercream-79d640",
     "https://63d57fc4af3368398f3afe7e--gregarious-buttercream-79d640",
-    "https://63d57fc4af3368398f3afe7e--gregarious-buttercream-79d640.netlify.app/"
+    "https://63d57fc4af3368398f3afe7e--gregarious-buttercream-79d640.netlify.app"
 ]
 
 app.add_middleware(
