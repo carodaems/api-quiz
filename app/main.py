@@ -34,12 +34,14 @@ origins = [
     "https://gregarious-buttercream-79d640.netlify.app",
     "https://gregarious-buttercream-79d640",
     "https://63d57fc4af3368398f3afe7e--gregarious-buttercream-79d640",
-    "https://63d57fc4af3368398f3afe7e--gregarious-buttercream-79d640.netlify.app"
+    "https://63d57fc4af3368398f3afe7e--gregarious-buttercream-79d640.netlify.app",
+    "https://quiz-app-interface.netlify.app/",
+    "https://quiz-app-interface"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
