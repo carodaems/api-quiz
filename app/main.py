@@ -118,19 +118,24 @@ def update_response(guess: schemas.QuestionCompare, db: Session = Depends(get_db
 def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
     name = "Team " + str(team.number)
 
+    db_scores = db.query(models.Scores).first()
+
     db_team = db.query(models.Team).filter(
         models.Team.id == team.number, models.Team.team_name == name).first()
     if db_team is None:
         db_team = models.Team(team_name=name, id=team.number)
+        db_scores = models.Scores(team_id=team.number, id=team.number, score=0)
     else:
         db_team.id = team.number
         db_team.team_name = name
 
     db.add(db_team)
+    db.add(db_scores)
     db.flush()
     db.commit()
     db.refresh(db_team)
-    return db_team
+    db.refresh(db_scores)
+    return {db_team, db_scores}
 
 
 @app.put("/scores")
@@ -148,7 +153,6 @@ def update_scores(db: Session = Depends(get_db)):
             db.flush()
             db.commit()
             db.refresh(scores)
-    current_round["round"] += 1
     return {"message": "updated"}
 
 
