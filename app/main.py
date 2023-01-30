@@ -70,7 +70,6 @@ def update_quiz_round(round_id: int, round: schemas.QuizRoundUpdate, db: Session
     if db_round is None:
         raise HTTPException(status_code=404, detail="Quiz round not found")
     db_round.name = round.name
-    db_round.key = round.key
     db.add(db_round)
     db.commit()
     db.refresh(db_round)
