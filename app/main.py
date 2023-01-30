@@ -384,12 +384,58 @@ def compare_question(guess: schemas.QuestionCompare, db: Session = Depends(get_d
 
 
 @app.post("/setround")
-async def set_round():
-    current_round["round"] += 1
-    return current_round
+async def set_round(db: Session = Depends(get_db)):
+    curr_round = current_round["round"]
+
+    total_rounds = db.query(models.QuizRound).all()
+    counter = 0
+    for round in total_rounds:
+        counter += 1
+
+    if curr_round > counter:
+        raise HTTPException(
+            status_code=404, detail="This is the end of the quiz."
+        )
+    else:
+        current_round["round"] += 1
+        current_round["question"] = 1
+
+    return curr_round
 
 
 @app.post("/setquestion")
-async def set_question():
-    current_round["question"] += 1
-    return current_round
+async def set_question(db: Session = Depends(get_db)):
+    curr_round = current_round["round"]
+    curr_question = current_round["question"]
+
+    questions_round = db.query(models.Question).filter(
+        models.Question.round_id == curr_round).all()
+
+    counter = 0
+    for question in questions_round:
+        counter += 1
+
+    if curr_question > counter:
+        raise HTTPException(
+            status_code=404, detail="This is the end of the round.")
+    else:
+        current_round["question"] += 1
+        return curr_question
+
+
+# RESETS
+
+@app.post("/wipe_data")
+def wipe_data(db: Session = Depends(get_db)):
+    try:
+        db.query(models.QuizRound).delete()
+        db.query(models.Responses).delete()
+        db.query(models.Question).delete()
+        db.query(models.Scores).delete()
+        db.commit()
+        return {"message": "Data wiped successfully."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Error wiping data.")
+    finally:
+        db.close()
