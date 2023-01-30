@@ -350,7 +350,7 @@ async def create_multiple_quiz_answers(round_id: int, answers: List[schemas.Ques
         models.QuizRound.id == round_id).first()
     if db_round is None:
         name = "Round " + str(round_id)
-        db_round = models.QuizRound(name=name, key=name)
+        db_round = models.QuizRound(name=name)
         db.add(db_round)
         db.flush()
         db.commit()
