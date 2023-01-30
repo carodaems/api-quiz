@@ -286,7 +286,7 @@ async def get_round():
 
 # DELETE
 
-@app.delete("quiz_rounds/{round_id}")
+@app.delete("/quiz_rounds/{round_id}")
 def delete_quiz_round(round_id: int, db: Session = Depends(get_db)):
     db_round = db.query(models.QuizRound.filter(
         models.QuizRound.id == round_id)).first()
