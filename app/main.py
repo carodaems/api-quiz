@@ -288,8 +288,8 @@ async def get_round():
 
 @app.delete("/quiz_rounds/{round_id}")
 def delete_quiz_round(round_id: int, db: Session = Depends(get_db)):
-    db_round = db.query(models.QuizRound.filter(
-        models.QuizRound.id == round_id)).first()
+    db_round = db.query(models.QuizRound).filter(
+        models.QuizRound.id == round_id).first()
     if db_round is None:
         raise HTTPException(status_code=404, detail="Quiz round not found")
     db.delete(db_round)
