@@ -391,6 +391,23 @@ def compare_question(guess: schemas.QuestionCompare, db: Session = Depends(get_d
 async def set_round_next(db: Session = Depends(get_db)):
     curr_round = current_round["round"]
 
+    teams = db.query(models.Team).all()
+    round_id = current_round["round"]
+    for team in teams:
+        for scores in team.scores:
+            score = scores.score
+            for response in team.responses:
+                if response.correct and response.round_id == round_id:
+                    score += 1
+            team.scores.score = score
+            db.add(scores)
+            db.flush()
+            db.commit()
+            db.refresh(scores)
+
+    questions_round = db.query(models.Question).filter(
+        models.Question.round_id == curr_round).all()
+
     total_rounds = db.query(models.QuizRound).all()
     counter = 0
     for round in total_rounds:
@@ -411,9 +428,6 @@ async def set_round_next(db: Session = Depends(get_db)):
 async def set_question_next(db: Session = Depends(get_db)):
     curr_round = current_round["round"]
     curr_question = current_round["question"]
-
-    questions_round = db.query(models.Question).filter(
-        models.Question.round_id == curr_round).all()
 
     counter = 0
     for question in questions_round:
