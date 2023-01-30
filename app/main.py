@@ -383,8 +383,8 @@ def compare_question(guess: schemas.QuestionCompare, db: Session = Depends(get_d
     return db_response
 
 
-@app.post("/setround")
-async def set_round(db: Session = Depends(get_db)):
+@app.post("/setround/next")
+async def set_round_next(db: Session = Depends(get_db)):
     curr_round = current_round["round"]
 
     total_rounds = db.query(models.QuizRound).all()
@@ -403,8 +403,8 @@ async def set_round(db: Session = Depends(get_db)):
     return curr_round
 
 
-@app.post("/setquestion")
-async def set_question(db: Session = Depends(get_db)):
+@app.post("/setquestion/next")
+async def set_question_next(db: Session = Depends(get_db)):
     curr_round = current_round["round"]
     curr_question = current_round["question"]
 
@@ -421,6 +421,32 @@ async def set_question(db: Session = Depends(get_db)):
     else:
         current_round["question"] += 1
         return curr_question
+
+
+@app.post("/setround/back")
+def set_round_back():
+    curr_round = current_round["round"]
+    if curr_round == 1:
+        raise HTTPException(
+            status_code=404, detail="You are at the start of the round.")
+    else:
+        current_round["round"] -= 1
+
+    return current_round
+
+
+@app.post("/setquestion/back")
+def set_question_back():
+    curr_question = current_round["question"]
+
+    if curr_question == 1:
+        raise HTTPException(
+            status_code=404, detail="You are at the start of the round"
+        )
+    else:
+        current_round["question"] -= 1
+
+    return current_round
 
 
 # RESETS
