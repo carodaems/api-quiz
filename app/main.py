@@ -312,7 +312,7 @@ def delete_question(round_id: int, question_id: int, db: Session = Depends(get_d
 
 @app.post("/quiz_rounds")
 def create_quiz_round(round: schemas.QuizRoundCreate, db: Session = Depends(get_db)):
-    db_round = models.QuizRound(name=round.name, key=round.key)
+    db_round = models.QuizRound(name=round.name)
     round_check = db.query(models.QuizRound).filter(
         models.QuizRound.name == round.name).first()
     if round_check is None:
@@ -433,12 +433,12 @@ async def set_question_next(db: Session = Depends(get_db)):
     for question in questions_round:
         counter += 1
 
-    if curr_question > counter:
+    if curr_question == counter:
         raise HTTPException(
             status_code=404, detail="This is the end of the round.")
     else:
         current_round["question"] += 1
-        return curr_question
+        return {curr_question, counter}
 
 
 @app.put("/scores")

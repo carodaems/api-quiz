@@ -8,7 +8,7 @@ class QuizRound(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    key = Column(String, index=True)
+
     questions = relationship("Question", back_populates="round")
 
 

@@ -4,7 +4,6 @@ from typing import List, Dict
 
 class QuizRoundCreate(BaseModel):
     name: str
-    key: str
 
 
 class QuizRound(QuizRoundCreate):
@@ -13,7 +12,6 @@ class QuizRound(QuizRoundCreate):
 
 class QuizRoundUpdate(BaseModel):
     name: str
-    key: str
 
 
 class QuestionCreate(BaseModel):
