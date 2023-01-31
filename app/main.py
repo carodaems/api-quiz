@@ -373,7 +373,11 @@ async def create_multiple_quiz_answers(round_id: int, answers: List[schemas.Ques
 def compare_question(guess: schemas.QuestionCompare, db: Session = Depends(get_db)):
     question = db.query(models.Question).filter(
         models.Question.question_number == current_round["question"], models.Question.round_id == current_round["round"]).first()
-    if question.correct_answer == guess.guess:
+    if question is None:
+        raise HTTPException(
+            status_code=404, detail="This question does not exist yet."
+        )
+    elif question.correct_answer == guess.guess:
         is_correct = True
     else:
         is_correct = False
